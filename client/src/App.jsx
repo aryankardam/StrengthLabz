@@ -1,5 +1,5 @@
 import './App.css'
-import router from "./routes";
+import router from "./routes/Index";
 
 function App() {
   
