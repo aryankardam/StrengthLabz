@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const AxiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_BACKEND_URL || 'https://strengthlabz-server.onrender.com',
+  withCredentials: true,
   timeout: 10000,
 });
 

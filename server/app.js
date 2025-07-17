@@ -8,12 +8,21 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',                        // local frontend dev
+  'https://strength-labz.vercel.app',             // deployed frontend
+  'https://strength-labz-git-main-aryan-kardams-projects.vercel.app', // any other frontend origins
+];
+
+// Enable CORS for specific origins
 app.use(cors({
-  origin: [
-    'https://strength-labz-git-main-aryan-kardams-projects.vercel.app/',
-    'http://localhost:3000' // for development
-  ],
-  credentials: true
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
 }));
 
 app.use(cookieParser());
