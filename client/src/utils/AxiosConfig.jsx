@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://strengthlabz-server.onrender.com', // Your API base URL
+  baseURL: 'https://strengthlabz-server.onrender.com', // Your API base URL
   timeout: 10000, // 10 second timeout
   withCredentials: true, // Include credentials in requests
 });
