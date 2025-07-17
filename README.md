@@ -65,6 +65,7 @@ strengthLabz/
 💼 Recruiter Impact: Demonstrates real-world skills — Full Stack, REST APIs, auth, deployment, state management, and more.
 
 ### 🧪 Local Development Setup
+```
 # Clone the repository
 git clone https://github.com/aryankardam/StrengthLabz.git
 cd StrengthLabz
@@ -80,7 +81,7 @@ npm install
 # Run both servers
 npm run dev  # from /client
 npm start    # from /server
-
+```
 
 ### 📜 License
 This project is open-source and available under the MIT License.
