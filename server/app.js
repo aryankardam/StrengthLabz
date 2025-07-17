@@ -15,15 +15,25 @@ const allowedOrigins = [
 ];
 
 // Enable CORS for specific origins
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, false); // or true if you want to allow postman etc.
+    if (allowedOrigins.includes(origin)) {
+      callback(null, origin);  // MUST pass origin string, not true
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
-}));
+  },
+  credentials: true,  // allow cookies/auth headers
+};
+
+app.use(cors(corsOptions));
+
+// Remove the following block to avoid conflicting CORS settings:
+// app.use(cors({
+//   origin: '*',
+// }));
+
 
 app.use(cookieParser());
 app.use(express.json());
