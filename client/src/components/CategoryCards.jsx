@@ -19,7 +19,12 @@ const CategoryCards = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <div className="flex overflow-x-auto no-scrollbar gap-4 pb-2">
+      <div
+        className="
+          grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4
+          lg:flex lg:overflow-x-auto lg:gap-4 lg:pb-2 custom-scroll-hide
+        "
+      >
         {categories.map((category, index) => {
           const imageUrl =
             category.image ||
