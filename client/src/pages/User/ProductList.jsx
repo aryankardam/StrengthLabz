@@ -44,7 +44,8 @@ const ProductList = () => {
       const maxPrice = queryParams.get('maxPrice');
       
       // Build API URL with query parameters
-      let apiUrl = '/api/products/products';
+      let apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/products/products`;
+
       const params = new URLSearchParams();
       
       if (category) params.append('category', category);
