@@ -11,9 +11,9 @@ const cors = require('cors');
 const app = express();
 
 const allowedOrigins = [
-  'http://localhost:5173',                        // local frontend dev
-  // 'https://strength-labz.vercel.app',             // deployed frontend
-  // 'https://strength-labz-git-main-aryan-kardams-projects.vercel.app', // any other frontend origins
+  'https://strength-labz.vercel.app',             // deployed frontend
+  'https://strength-labz-git-main-aryan-kardams-projects.vercel.app', // any other frontend origins,
+  'http://localhost:5173',   //local deployment
 ];
 
 // Enable CORS for specific origins
