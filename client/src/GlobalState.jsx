@@ -18,6 +18,7 @@ export const DataProvider = ({ children }) => {
       setToken(storedToken);
     }
   }, []);
+  
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const refreshToken = async () => {
@@ -92,17 +93,22 @@ export const DataProvider = ({ children }) => {
   // Get the UserAPI hook result
   const userAPIResult = UserAPI(token);
 
+  // FIXED: Initialize ProductAPI and CategoryAPI hooks properly
+  const productsAPIResult = ProductAPI();
+  const categoryAPIResult = CategoryAPI();
+
   const state = {
     token: [token, setToken],
     refreshToken,
     isRefreshing,
-    productsAPI: ProductAPI(),
-    categoryAPI: CategoryAPI(),
-    UserAPI: userAPIResult // Changed from userAPI to UserAPI (uppercase) to match ProductList.jsx
+    productsAPI: productsAPIResult, // Pass the complete hook result
+    categoryAPI: categoryAPIResult,  // Pass the complete hook result
+    UserAPI: userAPIResult
   };
 
   console.log('GlobalState render - token:', token, 'isRefreshing:', isRefreshing);
-  console.log('UserAPI result:', userAPIResult); // Debug log to see what's being returned
+  console.log('UserAPI result:', userAPIResult);
+  console.log('ProductsAPI result:', productsAPIResult); // Debug log
 
   return (
     <GlobalState.Provider value={state}>

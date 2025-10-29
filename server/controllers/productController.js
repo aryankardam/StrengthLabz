@@ -183,19 +183,41 @@ const productController = {
 
   createProducts: async (req, res) => {
     try {
-      const { product_id, title, price, description, content, category } = req.body;
+      const { product_id, title, price, description, content, category, images } = req.body;
 
-      if (!req.files || req.files.length === 0) {
+      console.log('📥 Received request body:', JSON.stringify(req.body, null, 2));
+      console.log('📎 req.files:', req.files);
+
+      // ✅ CRITICAL FIX: Support BOTH JSON payload (with images array) AND multipart form-data
+      let productImages = [];
+
+      // Case 1: Frontend already uploaded to Cloudinary and sent images array in JSON
+      if (images && Array.isArray(images) && images.length > 0) {
+        console.log('✅ Using images from JSON body:', images);
+        productImages = images;
+      }
+      // Case 2: Traditional multipart upload (backward compatibility)
+      else if (req.files && req.files.length > 0) {
+        console.log('📤 Uploading files from multipart form-data');
+        for (const file of req.files) {
+          const uploaded = await uploadImage(file.buffer);
+          productImages.push({ url: uploaded.secure_url, public_id: uploaded.public_id });
+        }
+      }
+      // Case 3: No images provided at all
+      else {
+        console.log('❌ No images found in request');
         return res.status(400).json({ msg: 'Please upload product images.' });
       }
 
-      const exists = await Products.findOne({ product_id });
-      if (exists) return res.status(400).json({ msg: 'Product ID already exists' });
+      // Validate required fields
+      if (!product_id || !title || !price) {
+        return res.status(400).json({ msg: 'Missing required fields: product_id, title, price' });
+      }
 
-      const images = [];
-      for (const file of req.files) {
-        const uploaded = await uploadImage(file.buffer);
-        images.push({ url: uploaded.secure_url, public_id: uploaded.public_id });
+      const exists = await Products.findOne({ product_id });
+      if (exists) {
+        return res.status(400).json({ msg: 'Product ID already exists' });
       }
 
       const newProduct = new Products({
@@ -205,34 +227,67 @@ const productController = {
         description,
         content,
         category,
-        images,
+        images: productImages,
       });
 
       await newProduct.save();
+      console.log('✅ Product created successfully:', newProduct._id);
+      
       res.status(201).json({ msg: 'Product created', product: newProduct });
     } catch (err) {
+      console.error('❌ Error in createProducts:', err);
       res.status(500).json({ msg: 'Server error', error: err.message });
     }
   },
 
   updateProduct: async (req, res) => {
     try {
-      const { title, price, description, content, category } = req.body;
+      const { title, price, description, content, category, images } = req.body;
+
+      console.log('📥 Update request - body:', JSON.stringify(req.body, null, 2));
+      console.log('📎 Update request - files:', req.files);
 
       const product = await Products.findById(req.params.id);
       if (!product) return res.status(404).json({ msg: 'Product not found' });
 
-      let images = product.images;
+      let productImages = product.images;
 
-      if (req.files && req.files.length > 0) {
+      // ✅ Handle both JSON payload with images array AND multipart upload
+      if (images && Array.isArray(images) && images.length > 0) {
+        console.log('✅ Using images from JSON body for update');
+        
+        // Delete old images from Cloudinary if they have public_id
         for (const img of product.images) {
-          await cloudinary.uploader.destroy(img.public_id);
+          if (img.public_id) {
+            try {
+              await cloudinary.uploader.destroy(img.public_id);
+              console.log('🗑️ Deleted old image:', img.public_id);
+            } catch (err) {
+              console.log('⚠️ Failed to delete image:', img.public_id, err.message);
+            }
+          }
+        }
+        
+        productImages = images;
+      } else if (req.files && req.files.length > 0) {
+        console.log('📤 Uploading new files from multipart form-data');
+        
+        // Delete old images from Cloudinary
+        for (const img of product.images) {
+          if (img.public_id) {
+            try {
+              await cloudinary.uploader.destroy(img.public_id);
+              console.log('🗑️ Deleted old image:', img.public_id);
+            } catch (err) {
+              console.log('⚠️ Failed to delete image:', img.public_id, err.message);
+            }
+          }
         }
 
-        images = [];
+        productImages = [];
         for (const file of req.files) {
           const uploaded = await uploadImage(file.buffer);
-          images.push({ url: uploaded.secure_url, public_id: uploaded.public_id });
+          productImages.push({ url: uploaded.secure_url, public_id: uploaded.public_id });
         }
       }
 
@@ -244,13 +299,15 @@ const productController = {
           description: description || product.description,
           content: content || product.content,
           category: category || product.category,
-          images,
+          images: productImages,
         },
         { new: true }
       );
 
+      console.log('✅ Product updated successfully:', updatedProduct._id);
       res.status(200).json({ msg: 'Product updated', product: updatedProduct });
     } catch (err) {
+      console.error('❌ Error in updateProduct:', err);
       res.status(500).json({ msg: err.message });
     }
   },
@@ -261,12 +318,21 @@ const productController = {
       if (!product) return res.status(404).json({ msg: 'Product not found' });
 
       for (const img of product.images) {
-        await cloudinary.uploader.destroy(img.public_id);
+        if (img.public_id) {
+          try {
+            await cloudinary.uploader.destroy(img.public_id);
+            console.log('🗑️ Deleted image:', img.public_id);
+          } catch (err) {
+            console.log('⚠️ Failed to delete image:', img.public_id, err.message);
+          }
+        }
       }
 
       await Products.findByIdAndDelete(req.params.id);
+      console.log('✅ Product deleted:', req.params.id);
       res.status(200).json({ msg: 'Product deleted' });
     } catch (err) {
+      console.error('❌ Error in deleteProduct:', err);
       res.status(500).json({ msg: err.message });
     }
   },
