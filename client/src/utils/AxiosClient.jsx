@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const AxiosClient = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: 'https://strengthlabz-server.onrender.com',
   withCredentials: true,
   timeout: 10000,
 });
